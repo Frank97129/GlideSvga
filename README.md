@@ -30,7 +30,7 @@ dependencies {
 }
 ```
 
-把 `<version-tag>` 替换成 GitHub Release 或 tag，例如 `1.0.0`。
+把 `<version-tag>` 替换成 GitHub Release 或 tag，例如 `v1.0.1`。
 
 当前仓库内的 demo app 使用本地模块方式调试：
 
@@ -88,12 +88,12 @@ imageView.clearSvga()
 提交代码后创建并推送 tag：
 
 ```bash
-git tag 1.0.0
-git push origin 1.0.0
+git tag v1.0.1
+git push origin v1.0.1
 ```
 
 JitPack 构建成功后，其他 Android 项目即可通过下面的方式引入：
 
 ```kotlin
-implementation("com.github.Frank97129.GlideSvga:lib-svga:1.0.0")
+implementation("com.github.Frank97129.GlideSvga:lib-svga:v1.0.1")
 ```

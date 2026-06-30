@@ -1,2 +1,4 @@
 jdk:
   - openjdk17
+install:
+  - ./gradlew :lib-svga:publishReleasePublicationToMavenLocal -Pversion=$VERSION -x test -x lint --console=plain

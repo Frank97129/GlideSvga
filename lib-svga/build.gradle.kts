@@ -52,7 +52,10 @@ afterEvaluate {
             register<MavenPublication>("release") {
                 groupId = "com.github.Frank97129.GlideSvga"
                 artifactId = "lib-svga"
-                version = System.getenv("VERSION") ?: "1.0.0"
+                version = (findProperty("version") as? String)
+                    ?.takeIf { it.isNotBlank() && it != "unspecified" }
+                    ?: System.getenv("VERSION")
+                    ?: "1.0.0"
                 from(components["release"])
 
                 pom {
