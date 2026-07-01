@@ -150,10 +150,12 @@ class SVGAVideoEntity {
     }
 
     private fun createBitmap(filePath: String): Bitmap? {
-        return if (isGlide)
-            SVGAGlideBitmapFileDecoderDelegate.decodeBitmapFrom(filePath, mFrameWidth, mFrameHeight)
-        else
-            SVGABitmapFileDecoder.decodeBitmapFrom(filePath, mFrameWidth, mFrameHeight)
+        return if (isGlide) SVGAGlideBitmapFileDecoderDelegate.decodeBitmapFrom(
+            filePath,
+            mFrameWidth,
+            mFrameHeight
+        )
+        else SVGABitmapFileDecoder.decodeBitmapFrom(filePath, mFrameWidth, mFrameHeight)
     }
 
     private fun parserImages(obj: MovieEntity) {
@@ -174,14 +176,10 @@ class SVGAVideoEntity {
     }
 
     private fun createBitmap(byteArray: ByteArray, filePath: String): Bitmap? {
-        val bitmap = if (isGlide)
-            SVGAGlideBitmapByteDecoderDelegate.decodeBitmapFrom(
-                byteArray,
-                mFrameWidth,
-                mFrameHeight
-            )
-        else
-            SVGABitmapByteArrayDecoder.decodeBitmapFrom(byteArray, mFrameWidth, mFrameHeight)
+        val bitmap = if (isGlide) SVGAGlideBitmapByteDecoderDelegate.decodeBitmapFrom(
+            byteArray, mFrameWidth, mFrameHeight
+        )
+        else SVGABitmapByteArrayDecoder.decodeBitmapFrom(byteArray, mFrameWidth, mFrameHeight)
         return bitmap ?: createBitmap(filePath)
     }
 
@@ -222,8 +220,7 @@ class SVGAVideoEntity {
     }
 
     private fun createSvgaAudioEntity(
-        audio: AudioEntity,
-        audiosFileMap: HashMap<String, File>
+        audio: AudioEntity, audiosFileMap: HashMap<String, File>
     ): SVGAAudioEntity {
         val item = SVGAAudioEntity(audio)
         val startTime = (audio.startTime ?: 0).toDouble()
@@ -249,11 +246,7 @@ class SVGAVideoEntity {
                 val offset = ((startTime / totalTime) * length).toLong()
                 if (SVGASoundManager.isInit()) {
                     item.soundID = SVGASoundManager.load(
-                        soundCallback,
-                        it.fd,
-                        offset,
-                        length.toLong(),
-                        1
+                        soundCallback, it.fd, offset, length.toLong(), 1
                     )
                 } else {
                     item.soundID = soundPool?.load(it.fd, offset, length.toLong(), 1)
@@ -277,8 +270,7 @@ class SVGAVideoEntity {
                 val audioCache = SVGACache.buildAudioFile(it.key)
                 audiosFileMap[it.key] =
                     audioCache.takeIf { file -> file.exists() } ?: generateAudioFile(
-                        audioCache,
-                        it.value
+                        audioCache, it.value
                     )
             }
         }
@@ -334,12 +326,10 @@ class SVGAVideoEntity {
     private fun generateSoundPool(entity: MovieEntity): SoundPool? {
         return try {
             if (Build.VERSION.SDK_INT >= 21) {
-                val attributes = AudioAttributes.Builder()
-                    .setUsage(AudioAttributes.USAGE_MEDIA)
-                    .build()
+                val attributes =
+                    AudioAttributes.Builder().setUsage(AudioAttributes.USAGE_MEDIA).build()
                 SoundPool.Builder().setAudioAttributes(attributes)
-                    .setMaxStreams(12.coerceAtMost(entity.audios.count()))
-                    .build()
+                    .setMaxStreams(12.coerceAtMost(entity.audios.count())).build()
             } else {
                 SoundPool(12.coerceAtMost(entity.audios.count()), AudioManager.STREAM_MUSIC, 0)
             }
@@ -360,17 +350,30 @@ class SVGAVideoEntity {
         soundPool = null
         audioList = emptyList()
         spriteList = emptyList()
+        clearImageMap()
+    }
+
+
+    private fun clearImageMap() {
+        if (imageMap.isEmpty()) return
+
+        val bitmaps = imageMap.values.filterNotNull().distinctBy { System.identityHashCode(it) }
+
         imageMap.clear()
+
+        bitmaps.forEach { bitmap ->
+            if (!bitmap.isRecycled) {
+                runCatching {
+                    bitmap.recycle()
+                }
+            }
+        }
     }
 
     private var isGlide = true
 
     constructor(
-        json: JSONObject,
-        cacheDir: File,
-        frameWidth: Int,
-        frameHeight: Int,
-        glide: Boolean
+        json: JSONObject, cacheDir: File, frameWidth: Int, frameHeight: Int, glide: Boolean
     ) {
         isGlide = glide
         mFrameWidth = frameWidth
@@ -389,11 +392,7 @@ class SVGAVideoEntity {
     }
 
     constructor(
-        entity: MovieEntity,
-        cacheDir: File,
-        frameWidth: Int,
-        frameHeight: Int,
-        glide: Boolean
+        entity: MovieEntity, cacheDir: File, frameWidth: Int, frameHeight: Int, glide: Boolean
     ) {
         isGlide = glide
         this.mFrameWidth = frameWidth
