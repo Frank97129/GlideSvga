@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -29,9 +31,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
     publishing {
         singleVariant("release") {
             withSourcesJar()
@@ -40,10 +39,16 @@ android {
 }
 
 dependencies {
-    api(group = "com.squareup.wire", name = "wire-runtime", version = "4.4.1")
-    api(group = "com.github.bumptech.glide", name = "glide", version = "4.16.0")
-    kapt(group = "com.github.bumptech.glide", name = "compiler", version = "4.16.0")
-    kapt(group = "com.github.bumptech.glide", name = "annotations", version = "4.16.0")
+    api("com.squareup.wire:wire-runtime:4.4.1")
+    api("com.github.bumptech.glide:glide:5.0.5")
+    kapt("com.github.bumptech.glide:compiler:5.0.5")
+    kapt("com.github.bumptech.glide:annotations:5.0.5")
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_1_8)
+    }
 }
 
 afterEvaluate {

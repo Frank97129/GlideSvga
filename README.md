@@ -26,11 +26,11 @@ plugins {
 
 dependencies {
     implementation("com.github.Frank97129:GlideSvga:<version-tag>")
-    kapt("com.github.bumptech.glide:compiler:4.16.0")
+    kapt("com.github.bumptech.glide:compiler:5.0.5")
 }
 ```
 
-把 `<version-tag>` 替换成 GitHub Release 或 tag，例如 `v1.0.1`。
+把 `<version-tag>` 替换成 GitHub Release 或 tag，例如 `v5.0.5`。
 
 当前仓库内的 demo app 使用本地模块方式调试：
 
@@ -88,12 +88,12 @@ imageView.clearSvga()
 提交代码后创建并推送 tag：
 
 ```bash
-git tag v1.0.1
-git push origin v1.0.1
+git tag v5.0.5
+git push origin v5.0.5
 ```
 
 JitPack 只构建并发布 `lib-svga` 模块。因为当前只发布一个 artifact，JitPack 会把它挂到仓库根坐标下，其他 Android 项目通过下面的方式引入：
 
 ```kotlin
-implementation("com.github.Frank97129:GlideSvga:v1.0.1")
+implementation("com.github.Frank97129:GlideSvga:v5.0.5")
 ```

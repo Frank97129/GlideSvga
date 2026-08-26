@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -31,9 +33,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -49,9 +48,15 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation(project(":lib-svga"))
-    implementation(group = "androidx.viewpager2", name = "viewpager2", version = "1.0.0")
-    implementation(group = "androidx.recyclerview", name = "recyclerview", version = "1.3.1")
-    implementation(group = "com.github.bumptech.glide", name = "glide", version = "4.16.0")
-    kapt(group = "com.github.bumptech.glide", name = "compiler", version = "4.16.0")
-    kapt(group = "com.github.bumptech.glide", name = "annotations", version = "4.16.0")
+    implementation("androidx.viewpager2:viewpager2:1.0.0")
+    implementation("androidx.recyclerview:recyclerview:1.3.1")
+    implementation("com.github.bumptech.glide:glide:5.0.5")
+    kapt("com.github.bumptech.glide:compiler:5.0.5")
+    kapt("com.github.bumptech.glide:annotations:5.0.5")
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_1_8)
+    }
 }

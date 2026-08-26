@@ -19,7 +19,7 @@ import java.util.zip.ZipInputStream
 /**
  * Created by PonyCui 16/6/18.
  */
-private var fileLock: Int = 0
+private val fileLock = Any()
 private var isUnzipping = false
 
 class SVGAParser(context: Context?) {
