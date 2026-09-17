@@ -53,6 +53,7 @@ open class SVGAImageViewDrawableTarget(
         val drawable = SVGAAnimationDrawable(
             resource.videoItem, times - 1, repeatMode, dynamicItem, showLastFrame
         )
+        drawable.frameRate = view.getSvgaFrameRate()
         drawable.tag = resource.model
         drawable.svgaCallback = svgaCallback
         drawable.scaleType = view.scaleType

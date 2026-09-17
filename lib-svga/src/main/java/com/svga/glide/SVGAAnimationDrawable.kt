@@ -36,6 +36,21 @@ class SVGAAnimationDrawable(
 
     private var mAnimator: ValueAnimator? = null
     private var currentFrame = -1
+    private var animatorFrame = -1
+    private val frameRateLimiter = SVGAFrameRateLimiter()
+
+    /**
+     * Maximum redraw rate for this drawable. Zero keeps the SVGA asset's original frame rate.
+     * The animation duration is unchanged; intermediate frames are skipped when limited.
+     */
+    var frameRate: Int
+        get() = frameRateLimiter.frameRate
+        set(value) {
+            val normalized = SVGAFrameRateLimiter.normalize(value)
+            if (frameRateLimiter.frameRate == normalized) return
+            frameRateLimiter.frameRate = normalized
+            renderFrame(animatorFrame)
+        }
 
     //一共有多少帧
     private var totalFrame = 0
@@ -68,6 +83,7 @@ class SVGAAnimationDrawable(
         if (!andPlay) {
             stop()
             if (currentFrame != realFrame) {
+                animatorFrame = realFrame
                 currentFrame = realFrame
                 updateDrawableFrame()
                 invalidateSelf()
@@ -159,6 +175,8 @@ class SVGAAnimationDrawable(
             mAnimator = null
             drawer.stop()
         }
+        animatorFrame = -1
+        frameRateLimiter.reset()
     }
 
     override fun isRunning(): Boolean {
@@ -187,13 +205,26 @@ class SVGAAnimationDrawable(
 
     override fun onAnimationUpdate(animation: ValueAnimator) {
         val frame = animation.animatedValue as Int
-        if (currentFrame != frame) {
-            currentFrame = frame
-            updateDrawableFrame()
-            invalidateSelf()
-            val percentage = (currentFrame + 1).toDouble() / videoItem.frames.toDouble()
-            svgaCallback?.onStep(currentFrame, percentage)
+        if (animatorFrame == frame) return
+        animatorFrame = frame
+        val nowNanos = System.nanoTime()
+        if (shouldRenderFrame(nowNanos)) {
+            renderFrame(frame, nowNanos)
         }
+        val percentage = (frame + 1).toDouble() / videoItem.frames.toDouble()
+        svgaCallback?.onStep(frame, percentage)
+    }
+
+    private fun shouldRenderFrame(nowNanos: Long): Boolean {
+        return frameRateLimiter.shouldRender(nowNanos)
+    }
+
+    private fun renderFrame(frame: Int, nowNanos: Long = System.nanoTime()) {
+        if (frame < 0 || currentFrame == frame) return
+        currentFrame = frame
+        frameRateLimiter.markRendered(nowNanos)
+        updateDrawableFrame()
+        invalidateSelf()
     }
 
     private fun updateDrawableFrame() {
@@ -253,7 +284,9 @@ class SVGAAnimationDrawable(
 
     override fun onAnimationEnd(animation: Animator) {
         svgaCallback?.onFinished()
-        if (!showLastFrame) {
+        if (showLastFrame && isStarted) {
+            renderFrame(videoItem.frames - 1)
+        } else {
             currentFrame = -1
             invalidateSelf()
         }
@@ -261,10 +294,13 @@ class SVGAAnimationDrawable(
 
     override fun onAnimationCancel(animation: Animator) {
         currentFrame = -1
+        animatorFrame = -1
+        frameRateLimiter.reset()
         invalidateSelf()
     }
 
     override fun onAnimationRepeat(animation: Animator) {
         svgaCallback?.onRepeat()
     }
+
 }

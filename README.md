@@ -70,7 +70,9 @@ import com.svga.glide.clearSvga
 import com.svga.glide.loadSvga
 import com.svga.glide.pauseSvga
 import com.svga.glide.resumeSvga
+import com.svga.glide.setSvgaFrameRate
 
+imageView.setSvgaFrameRate(15) // Per-view limit; 0 restores the asset frame rate.
 imageView.loadSvga("file:///android_asset/demo.svga")
 imageView.pauseSvga(true)
 imageView.resumeSvga(true)
