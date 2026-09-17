@@ -2,4 +2,5 @@
 <resources>
     <item name="svga_glide_target" type="id" />
     <item name="svga_glide_state" type="id" />
+    <item name="svga_glide_frame_rate" type="id" />
 </resources>

@@ -91,6 +91,23 @@ fun ImageView?.getLoadState(): Boolean {
     return (getTag(R.id.svga_glide_state) as? Boolean) ?: false
 }
 
+/**
+ * Limits SVGA redraws for this ImageView only. Use zero to restore the asset's original rate.
+ * Playback duration is preserved, so limiting the rate skips intermediate frames instead of
+ * slowing down the animation.
+ */
+fun ImageView?.setSvgaFrameRate(frameRate: Int) {
+    this ?: return
+    val normalized = SVGAFrameRateLimiter.normalize(frameRate)
+    setTag(R.id.svga_glide_frame_rate, normalized)
+    (drawable as? SVGAAnimationDrawable)?.frameRate = normalized
+}
+
+fun ImageView?.getSvgaFrameRate(): Int {
+    this ?: return 0
+    return (getTag(R.id.svga_glide_frame_rate) as? Int) ?: 0
+}
+
 fun ImageView?.pauseSvga(isInitiative: Boolean = false) {
     this ?: return
     updateLoadState(true)
