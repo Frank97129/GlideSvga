@@ -52,51 +52,57 @@ internal class SVGACanvasDrawer(videoItem: SVGAVideoEntity, val dynamicItem: SVG
                 hasMatteLayer = true
             }
         }
-        sprites.forEachIndexed { index, svgaDrawerSprite ->
+        val saveCount = canvas.saveCount
+        try {
+            sprites.forEachIndexed { index, svgaDrawerSprite ->
 
-            // Save matte sprite
-            svgaDrawerSprite.imageKey?.let {
-                /// No matte layer included or VERSION Unsopport matte
-                if (!hasMatteLayer || Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                    // Normal sprite
-                    drawSprite(svgaDrawerSprite, canvas, frameIndex)
-                    // Continue
-                    return@forEachIndexed
+                // Save matte sprite
+                svgaDrawerSprite.imageKey?.let {
+                    /// No matte layer included or VERSION Unsopport matte
+                    if (!hasMatteLayer || Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+                        // Normal sprite
+                        drawSprite(svgaDrawerSprite, canvas, frameIndex)
+                        // Continue
+                        return@forEachIndexed
+                    }
+                    /// Cache matte sprite
+                    if (it.endsWith(".matte")) {
+                        matteSprites.put(it, svgaDrawerSprite)
+                        // Continue
+                        return@forEachIndexed
+                    }
                 }
-                /// Cache matte sprite
-                if (it.endsWith(".matte")) {
-                    matteSprites.put(it, svgaDrawerSprite)
-                    // Continue
-                    return@forEachIndexed
+                /// Is matte begin
+                if (isMatteBegin(index, sprites)) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        saveID = canvas.saveLayer(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), null)
+                    } else {
+                        canvas.save()
+                    }
                 }
-            }
-            /// Is matte begin
-            if (isMatteBegin(index, sprites)) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    saveID = canvas.saveLayer(0f, 0f, canvas.width.toFloat(), canvas.height.toFloat(), null)
-                } else {
-                    canvas.save()
-                }
-            }
-            /// Normal matte
-            drawSprite(svgaDrawerSprite, canvas, frameIndex)
+                /// Normal matte
+                drawSprite(svgaDrawerSprite, canvas, frameIndex)
 
-            /// Is matte end
-            if (isMatteEnd(index, sprites)) {
-                matteSprites.get(svgaDrawerSprite.matteKey)?.let {
-                    drawSprite(it, this.sharedValues.shareMatteCanvas(canvas.width, canvas.height), frameIndex)
-                    canvas.drawBitmap(this.sharedValues.sharedMatteBitmap(), 0f, 0f, this.sharedValues.shareMattePaint())
+                /// Is matte end
+                if (isMatteEnd(index, sprites)) {
+                    matteSprites.get(svgaDrawerSprite.matteKey)?.let {
+                        drawSprite(it, this.sharedValues.shareMatteCanvas(canvas.width, canvas.height), frameIndex)
+                        canvas.drawBitmap(this.sharedValues.sharedMatteBitmap(), 0f, 0f, this.sharedValues.shareMattePaint())
+                    }
+                    // A missing matte must not leave the content layer open.
                     if (saveID != -1) {
                         canvas.restoreToCount(saveID)
-                    } else {
-                        canvas.restore()
+                        saveID = -1
                     }
-                    // Continue
-                    return@forEachIndexed
                 }
             }
+        } finally {
+            try {
+                canvas.restoreToCount(saveCount)
+            } finally {
+                releaseFrameSprites(sprites)
+            }
         }
-        releaseFrameSprites(sprites)
     }
 
     private fun isMatteBegin(spriteIndex: Int, sprites: List<SVGADrawerSprite>): Boolean {

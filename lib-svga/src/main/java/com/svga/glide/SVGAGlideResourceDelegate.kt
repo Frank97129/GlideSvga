@@ -5,6 +5,8 @@ import com.bumptech.glide.load.engine.Resource
 import com.bumptech.glide.util.Util
 import com.svga.glide.SVGAGlideEx.bitmapPool
 import com.svga.glide.SVGAGlideEx.log
+import java.util.Collections
+import java.util.IdentityHashMap
 
 /**
  * Time:2022/11/26 22:38
@@ -37,7 +39,14 @@ class SVGAGlideResourceDelegate(private val resource: SVGAResource) : Resource<S
         try {
             val map = resource.imageMap
             log.d(TAG, "recycle ${resource.model} size:${map?.size}")
-            map?.forEach { bitmapPool.put(it.value) }
+            if (map.isNullOrEmpty()) return
+            val bitmaps = Collections.newSetFromMap(IdentityHashMap<Bitmap, Boolean>())
+            bitmaps.addAll(map.values)
+            // Ownership passes to Glide. videoItem.clear() must not recycle pooled images.
+            map.clear()
+            bitmaps.forEach { bitmap ->
+                if (!bitmap.isRecycled) bitmapPool.put(bitmap)
+            }
         } catch (_: Throwable) {
         }
     }
