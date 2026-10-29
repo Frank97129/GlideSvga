@@ -40,3 +40,11 @@ Coverage:
 This is not a hardware-renderer, performance, animation-cancellation, or full-App test.
 It does not assert that sharing one mutable matte Bitmap across hardware draw calls
 is safe. See `docs/matte-audit-2026-10-29.md` for unresolved audit findings.
+
+## v5.0.10 rendering checks
+
+Add --rendering to run software and HWUI matte tests (176 drawing assertions plus
+10 lifecycle assertions). Add --benchmark to run the separate 720x720 two-mask
+benchmark. These modes require Android 10+ and do not install an APK.
+
+See docs/matte-optimization-5.0.10.md for measured results and compatibility limits.
